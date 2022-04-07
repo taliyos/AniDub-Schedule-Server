@@ -1,6 +1,10 @@
 import express from "express";
 import cors from "cors";
 
+import { CalendarRetrieval } from "./calendar/calendarRetrieval";
+
+const calendar = new CalendarRetrieval();
+
 const app = express();
 const port = 3001;
 
@@ -22,5 +26,6 @@ app.get("/calendar", (req, res) => {
 });
 
 app.listen(port, async () => {
-    return console.log(`Listening at http://localhost:${port}`);
+    console.log(`Listening at http://localhost:${port}`);
+    await calendar.update();
 });
