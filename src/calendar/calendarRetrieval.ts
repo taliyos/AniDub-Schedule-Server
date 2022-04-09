@@ -1,12 +1,12 @@
 import { promises } from "fs";
-import axios, { AxiosResponse, HeadersDefaults } from "axios";
+import { AxiosResponse } from "axios";
 
+// Interfaces
 import { ShowDate } from "../interfaces/showDate";
-import { TeamupConfig } from "../interfaces/teamupConfig";
+import { TeamupConfig } from "../interfaces/teamup/teamupConfig";
+import { TeamupCalendar } from "../interfaces/teamup/teamupCalendar";
 
-interface TeamupHeader extends HeadersDefaults {
-    "Teamup-Token": string;
-}
+import { getCalendar } from "../utils/teamupAPI";
 
 export class CalendarRetrieval {
     
@@ -27,46 +27,36 @@ export class CalendarRetrieval {
         if (this.teamupConfig == null || this.teamupConfig.APIKey === "") await this.loadConfig();
 
         const calendar = await this.fetchCalendar();
+        this.processCalendar(calendar);
+
     }
 
-    private async getShows() {
-        
+    // Creates the calendar from the teamup information
+    private async processCalendar(calendar : TeamupCalendar) {
+        for (let i = 0; i < calendar.events.length; i++) {
+            let show = 
+        }
     }
 
 
     // Retrieves the calendar from TeamUp
     private async fetchCalendar() {
+        // Set the start date
         let startDate = new Date();
-
-        // Set the start date to 7 days in the past
         startDate.setUTCFullYear(startDate.getUTCFullYear() + this.teamupConfig.startTime.year,
-        startDate.getUTCMonth() + this.teamupConfig.startTime.month,
-        startDate.getUTCDate() + this.teamupConfig.startTime.day);
-        let startSyntax = `${startDate.getUTCFullYear()}-${startDate.getUTCMonth() + 1}-${startDate.getUTCDate()}`;
+                                startDate.getUTCMonth() + this.teamupConfig.startTime.month,
+                                startDate.getUTCDate() + this.teamupConfig.startTime.day);
 
-        // Set the end date to to 2 months in the future
+        // Set the end date
         let endDate = new Date();
         endDate.setUTCFullYear(endDate.getUTCFullYear() + this.teamupConfig.endTime.year,
                                 endDate.getUTCMonth() + this.teamupConfig.endTime.month,
                                 endDate.getUTCDate() + this.teamupConfig.endTime.day);
-        let endSyntax = `${endDate.getUTCFullYear()}-${endDate.getUTCMonth() + 1}-${endDate.getUTCDate()}`;
 
-        // API Url
-        let url = `https://api.teamup.com/ksdhpfjcouprnauwda/events?startDate=${startSyntax}&endDate=${endSyntax}`;
+        const response = await getCalendar(this.teamupConfig, startDate, endDate)
 
-        const res = await axios.get(url, {
-            headers: {
-                "Teamup-Token": this.teamupConfig.APIKey
-            }
-        }).catch(err => {
-            console.log(err);
-        });
-
-        const data = (res as AxiosResponse).data;
-
-        console.log(data);
-
-        
+        const calendar = (response as AxiosResponse).data as TeamupCalendar;
+        return calendar;
     }
 
 }
