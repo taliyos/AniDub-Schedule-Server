@@ -35,10 +35,11 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 app.get("/calendar", (req, res) => {
-    res.send("Here's the calendar!");
+    res.send(calendar.currentCalendar);
 });
 
 app.listen(port, async () => {
     console.log(`Listening at http://localhost:${port}`);
     await calendar.update();
+    setInterval(async () => {await calendar.update(); }, 900000);
 });
