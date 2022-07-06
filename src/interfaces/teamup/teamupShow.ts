@@ -39,6 +39,8 @@ export interface TeamupShow {
     ristart_dt?: string;
     // Date of creation for the calendar item
     creation_dt: string;
+    // Date of update for the calendar item
+    update_dt: string;
     // Date of deletion for the calendar item
     delete_dt?: string;
     // Not used

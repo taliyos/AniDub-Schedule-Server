@@ -1,5 +1,6 @@
 import { promises } from "fs";
 import { AxiosResponse } from "axios";
+import chalk from "chalk";
 
 // Interfaces
 import { ShowDate } from "../interfaces/showDate";
@@ -8,14 +9,15 @@ import { TeamupCalendar } from "../interfaces/teamup/teamupCalendar";
 
 import { getCalendar } from "../utils/teamupAPI";
 
+import { processCalendar } from "./calendarProcessing";
+import { CalendarItem } from "../interfaces/calendarItem";
+
 export class CalendarRetrieval {
     
-    currentCalendar : ShowDate[];
+    currentCalendar : CalendarItem[];
+    lastRetrieved : Date | null;
 
     private teamupConfig : TeamupConfig;
-
-    constructor() {
-    }
 
     private async loadConfig() {
         const data = JSON.parse(await promises.readFile("./src/settings/teamup.json", "utf-8")) as TeamupConfig;
@@ -25,17 +27,13 @@ export class CalendarRetrieval {
     // Performs an update to the entire calendar
     async update() {
         if (this.teamupConfig == null || this.teamupConfig.APIKey === "") await this.loadConfig();
-
+        const retrievalTime = new Date();
         const calendar = await this.fetchCalendar();
-        this.processCalendar(calendar);
+        // Check if the new calendar has been updated since the last successful retrieval
+        if (this.isOldCalendar(calendar)) return;
 
-    }
-
-    // Creates the calendar from the teamup information
-    private async processCalendar(calendar : TeamupCalendar) {
-        for (let i = 0; i < calendar.events.length; i++) {
-            let show = 
-        }
+        this.currentCalendar = await processCalendar(calendar);
+        this.lastRetrieved = retrievalTime;
     }
 
 
@@ -53,10 +51,20 @@ export class CalendarRetrieval {
                                 endDate.getUTCMonth() + this.teamupConfig.endTime.month,
                                 endDate.getUTCDate() + this.teamupConfig.endTime.day);
 
-        const response = await getCalendar(this.teamupConfig, startDate, endDate)
+        const response = await getCalendar(this.teamupConfig, startDate, endDate);
 
         const calendar = (response as AxiosResponse).data as TeamupCalendar;
         return calendar;
+    }
+
+    // Checks if the calendar has been updated since the last retrieval
+    private isOldCalendar(calendar : TeamupCalendar) : boolean {
+        if (this.lastRetrieved == null || this.currentCalendar == null) return false;
+        for (let i = 0; i < calendar.events.length; i++) {
+            if (new Date(calendar.events[i].update_dt) > this.lastRetrieved) return false;
+        }
+        console.log(chalk.yellowBright("Calendar is old, not updating..."));
+        return true;
     }
 
 }

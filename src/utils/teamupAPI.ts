@@ -9,7 +9,6 @@ export async function getCalendar(teamupConfig : TeamupConfig, startDate : Date,
 
     // API Url
     let url = `https://api.teamup.com/ksdhpfjcouprnauwda/events?startDate=${startSyntax}&endDate=${endSyntax}`;
-
     const res = await axios.get(url, {
         headers: {
             "Teamup-Token": teamupConfig.APIKey
