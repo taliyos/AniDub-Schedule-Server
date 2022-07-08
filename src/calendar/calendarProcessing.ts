@@ -155,15 +155,21 @@ interface EpisodeAndSeason {
 };
 function getShowEpisodeAndSeason(title: string) : EpisodeAndSeason {
     let episode;
-    let season = 0;
+    let season = 1;
     let isBatch = false;
 
     // Gets the section of the string with the episode and season
     let section = title.substring(title.indexOf('#') + 1, title.length);
     let episodePart = section.substring(0, section.indexOf(' '));
     if (episodePart != null) {
-        episode = episodePart;
-        if (episodePart.includes('-')) isBatch = true;
+        if (/[0-9]/.exec(episodePart) == null) {
+            isBatch = true;
+            episode = "Batch";
+        }
+        else {
+            episode = episodePart;
+            if (episodePart.includes('-')) isBatch = true;
+        }
     }
     else isBatch = true;
 
