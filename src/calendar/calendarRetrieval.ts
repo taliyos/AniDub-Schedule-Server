@@ -13,7 +13,7 @@ import { processCalendar } from "./calendarProcessing";
 import { CalendarItem } from "../interfaces/calendarItem";
 
 export class CalendarRetrieval {
-    
+    archiveCalendar : CalendarItem[];
     currentCalendar : CalendarItem[];
     lastRetrieved : Date | null;
 
@@ -28,16 +28,20 @@ export class CalendarRetrieval {
     async update() {
         if (this.teamupConfig == null || this.teamupConfig.APIKey === "") await this.loadConfig();
         const retrievalTime = new Date();
+        if (this.archiveCalendar == null) {
+            const archiveCalendar = await this.fetchArchiveCalendar();
+            this.archiveCalendar = await processCalendar(archiveCalendar);
+        }
         const calendar = await this.fetchCalendar();
         // Check if the new calendar has been updated since the last successful retrieval
         if (this.isOldCalendar(calendar)) return;
 
-        this.currentCalendar = await processCalendar(calendar);
+        this.currentCalendar = (await processCalendar(calendar)).concat(this.archiveCalendar);
         this.lastRetrieved = retrievalTime;
     }
 
     // Retrieves the calendar from TeamUp
-    private async fetchCalendar() {
+    private async fetchCalendar() : Promise<TeamupCalendar> {
         // Set the start date
         let startDate = new Date();
         startDate.setUTCFullYear(startDate.getUTCFullYear() + this.teamupConfig.startTime.year,
@@ -49,6 +53,27 @@ export class CalendarRetrieval {
         endDate.setUTCFullYear(endDate.getUTCFullYear() + this.teamupConfig.endTime.year,
                                 endDate.getUTCMonth() + this.teamupConfig.endTime.month,
                                 endDate.getUTCDate() + this.teamupConfig.endTime.day);
+
+        const response = await getCalendar(this.teamupConfig, startDate, endDate);
+
+        const calendar = (response as AxiosResponse).data as TeamupCalendar;
+        return calendar;
+    }
+
+    // Gets older dates in the calendar that are unlikely to be updated
+    // This is separated to make the update requests much smaller
+    private async fetchArchiveCalendar() : Promise<TeamupCalendar>{
+        // Set the start date
+        let startDate = new Date();
+        startDate.setUTCFullYear(startDate.getUTCFullYear() + this.teamupConfig.updateStartTime.year,
+                                startDate.getUTCMonth() + this.teamupConfig.updateStartTime.month,
+                                startDate.getUTCDate() + this.teamupConfig.updateStartTime.day);
+
+        // Set the end date
+        let endDate = new Date();
+        endDate.setUTCFullYear(endDate.getUTCFullYear() + this.teamupConfig.updateEndTime.year,
+                                endDate.getUTCMonth() + this.teamupConfig.updateEndTime.month,
+                                endDate.getUTCDate() + this.teamupConfig.updateEndTime.day);
 
         const response = await getCalendar(this.teamupConfig, startDate, endDate);
 
