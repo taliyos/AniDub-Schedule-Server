@@ -28,7 +28,7 @@ export class CalendarRetrieval {
     async update() {
         if (this.teamupConfig == null || this.teamupConfig.APIKey === "") await this.loadConfig();
         const retrievalTime = new Date();
-        if (this.archiveCalendar == null) {
+        if (this.archiveCalendar == null || this.lastRetrieved.getUTCDate() != new Date().getUTCDate()) {
             const archiveCalendar = await this.fetchArchiveCalendar();
             this.archiveCalendar = await processCalendar(archiveCalendar);
         }
