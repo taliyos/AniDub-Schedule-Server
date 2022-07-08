@@ -20,7 +20,7 @@ const calendar = new CalendarRetrieval();
 const app = express();
 const port = 3001;
 
-const whitelist = ["http://localhost:3000", "http://127.0.0.1:3000"]
+const whitelist = ["http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.1.4:3000"]
 const corsOptions = {
     origin: function(origin, callback) {
         if (!origin || whitelist.indexOf(origin) !== -1) {
@@ -34,8 +34,23 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-app.get("/calendar", (req, res) => {
-    res.send(calendar.currentCalendar);
+app.post("/calendar", (req, res) => {
+    if (calendar.currentCalendar == null) {
+        res.status(503).json("Server starting... Try again.");
+        return;
+    }
+    if (req.body.startDate == null || req.body.endDate == null) {
+        res.json(calendar.currentCalendar);
+        return;
+    }
+    let startDate = new Date(req.body.startDate);
+    let endDate = new Date(req.body.endDate);
+    let constructedCalendar = calendar.getCalendar(startDate, endDate);
+    if (constructedCalendar == null) {
+        res.status(400).json("Invalid start and end dates");
+        return;
+    }
+    res.json(constructedCalendar);
 });
 
 app.listen(port, async () => {

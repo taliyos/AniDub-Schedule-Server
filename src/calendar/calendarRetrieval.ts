@@ -36,7 +36,6 @@ export class CalendarRetrieval {
         this.lastRetrieved = retrievalTime;
     }
 
-
     // Retrieves the calendar from TeamUp
     private async fetchCalendar() {
         // Set the start date
@@ -65,6 +64,38 @@ export class CalendarRetrieval {
         }
         console.log(chalk.yellowBright("Calendar is old, not updating..."));
         return true;
+    }
+
+    getCalendar(startDate : Date, endDate: Date) : CalendarItem[] {
+        if (this.currentCalendar == null) return null;
+        if (startDate > endDate) return null;
+        let startIndex = 0;
+        let endIndex = this.currentCalendar.length - 1;
+        for (let i = 0; i < this.currentCalendar.length; i++) {
+            if (this.currentCalendar[i].time.year >= startDate.getUTCFullYear()
+                && this.currentCalendar[i].time.month >= startDate.getUTCMonth()
+                && this.currentCalendar[i].time.day >= startDate.getUTCDate()
+            ) {
+                startIndex = i;
+                break;
+            }
+        }
+
+        for (let i = this.currentCalendar.length - 1; i >= 0; i--) {
+            if (this.currentCalendar[i].time.year <= endDate.getUTCFullYear()
+                && this.currentCalendar[i].time.month <= endDate.getUTCMonth()
+                && this.currentCalendar[i].time.day <= endDate.getUTCDate()
+            ) {
+                endIndex = i;
+                break;
+            }
+        }
+
+        let constructedCalendar : CalendarItem[] = [];
+        for (let i = startIndex; i <= endIndex; i++) {
+            constructedCalendar.push(this.currentCalendar[i]);
+        }
+        return constructedCalendar;
     }
 
 }
