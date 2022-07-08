@@ -49,7 +49,7 @@ export async function getShow(calItem: CalendarItem) {
         console.warn(chalk.redBright("Couldn't find " + chalk.bold(calItem.show.name) + " on AniList, using defaults"));
         return {
             id: 0,
-            coverImage: "static/img/nocover.png"
+            coverImage: "/img/nocover.png"
         }
     }
 
@@ -78,7 +78,7 @@ export async function getShow(calItem: CalendarItem) {
         console.log(chalk.redBright("Could not find " + calItem.show.name + " on AniList, using defaults"));
         return {
             id: 0,
-            coverImage: "static/img/nocover.png"
+            coverImage: "/img/nocover.png"
         }
     }
     console.log("Search for " + chalk.blueBright(calItem.show.name) + " complete!")
