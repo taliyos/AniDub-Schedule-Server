@@ -1,4 +1,10 @@
 export interface AnilistShow {
     id: number,
-    coverImage: string
+    coverImage: string,
+    externalLinks: ExternalLink[]
+}
+
+export interface ExternalLink {
+    site: string;
+    url: string;
 }

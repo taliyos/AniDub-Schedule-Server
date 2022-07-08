@@ -1,5 +1,3 @@
-import chalk from "chalk";
-
 import { Crunchyroll, DefaultStreamingService, Funimation, HiDive, HomeVideo, Netflix } from "../constants/StreamingServices";
 import { CalendarItem } from "../interfaces/calendarItem";
 import { Platform } from "../interfaces/platform";
@@ -9,11 +7,10 @@ import { StreamingService } from "../interfaces/streamingService";
 import { TeamupCalendar } from "../interfaces/teamup/teamupCalendar";
 import { TeamupShow } from "../interfaces/teamup/teamupShow";
 
-import { createShow, deleteAllShows, findShow } from "../services/showService";
+import { createShow, findShow } from "../services/showService";
 import { getShow } from "../utils/anilistAPI";
 
-import { AnilistShow } from "../interfaces/anilist/anilistShow";
-import { ShowDate } from "../interfaces/showDate";
+import { AnilistShow, ExternalLink } from "../interfaces/anilist/anilistShow";
 
 // Creates the calendar from the teamup information
 export async function processCalendar(calendar : TeamupCalendar) : Promise<CalendarItem[]> {
@@ -35,7 +32,8 @@ export async function processCalendar(calendar : TeamupCalendar) : Promise<Calen
 
             calItem.show.anilistID = anilistShow.id;
             calItem.show.image = anilistShow.coverImage;
-
+            calItem.show.platforms = fillShowPlatforms(calItem.show.platforms, anilistShow.externalLinks)
+            
             // Add show to the database
             await createShow(calItem.show);
 
@@ -197,4 +195,19 @@ function getShowReleaseTime(time: string) : ReleaseTime {
         hour: releaseTime.getUTCHours(),
         minute: releaseTime.getUTCMinutes()
     }
+}
+
+// Populates the platforms witht he external links from AniList
+function fillShowPlatforms(platforms: Platform[], externalLinks : ExternalLink[]) : Platform[] {
+    if (externalLinks == null || externalLinks.length == 0) return platforms;
+    for (let i = 0; i < platforms.length; i++) {
+        for (let j = 0; j < externalLinks.length; j++) {
+            if (platforms[i].streamingService.name.toLowerCase() === externalLinks[j].site.toLowerCase()) {
+                platforms[i].link = externalLinks[j].url;
+                break;
+            }
+        }
+    }
+
+    return platforms;
 }

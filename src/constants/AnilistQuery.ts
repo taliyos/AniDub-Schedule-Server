@@ -18,6 +18,10 @@ query fetchShow ($page: Int, $perPage: Int, $search: String) {
             coverImage {
                 extraLarge
             }
+            externalLinks {
+                site,
+                url
+            }
             status
         }
     }

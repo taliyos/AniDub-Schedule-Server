@@ -27,7 +27,7 @@ export async function getShow(calItem: CalendarItem) {
     }).catch(async (err) => {
         if (err.response.status == 429) {
             console.warn("Too many requests to AniList, waiting...");
-            await sleep(1000);
+            await sleep(10000);
             const result = await getShow(calItem);
             return result;
         }
@@ -49,7 +49,8 @@ export async function getShow(calItem: CalendarItem) {
         console.warn(chalk.redBright("Couldn't find " + chalk.bold(calItem.show.name) + " on AniList, using defaults"));
         return {
             id: 0,
-            coverImage: "/img/nocover.png"
+            coverImage: "/img/nocover.png",
+            externalLinks: null
         }
     }
 
@@ -70,6 +71,17 @@ export async function getShow(calItem: CalendarItem) {
     if (calItem.season != 1) {
         if (calItem.season - 1 < media.length) index = calItem.season - 1;
     }
+    else if (!media[0].title.romaji.toLowerCase().includes(calItem.show.name.toLowerCase()) && (media[0].title.english != null && !media[0].title.english.toLowerCase().includes(calItem.show.name.toLowerCase()))) {
+        console.log(chalk.yellowBright("First entry doesn't use the same name, searching..."));
+        for (let i = 1; i < media.length; i++) {
+            console.log("Checking " + chalk.yellowBright(media[i].title.romaji + "/" + media[i].title.english) + " against " + chalk.yellowBright(calItem.show.name));
+            if (media[i].title.romaji.toLowerCase().includes(calItem.show.name.toLowerCase()) || (media[i].title.english != null && media[i].title.english.toLowerCase().includes(calItem.show.name.toLowerCase()))) {
+                console.log(chalk.yellowBright("Valid entry found!"));
+                index = i;
+                break;
+            }
+        }
+    }
 
     // Currently, nothing is done with the show's title
     // In the future, both the english and romaji names should be passed on
@@ -78,14 +90,16 @@ export async function getShow(calItem: CalendarItem) {
         console.log(chalk.redBright("Could not find " + calItem.show.name + " on AniList, using defaults"));
         return {
             id: 0,
-            coverImage: "/img/nocover.png"
+            coverImage: "/img/nocover.png",
+            externalLinks: null
         }
     }
     console.log("Search for " + chalk.blueBright(calItem.show.name) + " complete!")
 
     return {
         id: media[index].id,
-        coverImage: media[index].coverImage.extraLarge
+        coverImage: media[index].coverImage.extraLarge,
+        externalLinks: media[index].externalLinks
     };
 
 }
