@@ -18,9 +18,9 @@ db.once("open", () => console.log("Connected to database!"));
 const calendar = new CalendarRetrieval();
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 
-const whitelist = ["http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.1.4:3000"]
+const whitelist = ["http://localhost:3000", "http://127.0.0.1:3000"]
 const corsOptions = {
     origin: function(origin, callback) {
         if (!origin || whitelist.indexOf(origin) !== -1) {
