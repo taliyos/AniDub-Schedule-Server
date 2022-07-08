@@ -13,13 +13,14 @@ import { createShow, deleteAllShows, findShow } from "../services/showService";
 import { getShow } from "../utils/anilistAPI";
 
 import { AnilistShow } from "../interfaces/anilist/anilistShow";
+import { ShowDate } from "../interfaces/showDate";
 
 // Creates the calendar from the teamup information
 export async function processCalendar(calendar : TeamupCalendar) : Promise<CalendarItem[]> {
     // Shorten the show's title then check if the show is already in the database
     // We only want to store the show once (Show Image, Location)
     // The calendar info will be stored separately.
-    let showCalendar = [];
+    let showCalendar : CalendarItem[] = [];
     for (let i = 0; i < calendar.events.length; i++) {
         let calItem = getCalendarItem(calendar.events[i]);;
 
@@ -43,9 +44,6 @@ export async function processCalendar(calendar : TeamupCalendar) : Promise<Calen
         
     }
     
-    for (let i = 0; i < showCalendar.length; i++) {
-        // console.log(showCalendar[i]);
-    }
 
     return showCalendar;
 }
@@ -69,6 +67,7 @@ function getCalendarItem(item: TeamupShow) : CalendarItem {
         episodeBatch: episodeAndSeason.batch,
         time: time,
     }
+
     return calItem;
 }
 
@@ -150,21 +149,21 @@ function getShowServices(calendarIDs: number[]) : StreamingService[] {
 }
 
 interface EpisodeAndSeason {
-    episode: number,
+    episode: string,
     season: number,
     batch: boolean
 };
 function getShowEpisodeAndSeason(title: string) : EpisodeAndSeason {
-    let episode = 0;
+    let episode;
     let season = 0;
     let isBatch = false;
 
     // Gets the section of the string with the episode and season
     let section = title.substring(title.indexOf('#') + 1, title.length);
-    let episodePart = /[0-9]/.exec(section.substring(0, section.indexOf(' ')));
+    let episodePart = section.substring(0, section.indexOf(' '));
     if (episodePart != null) {
-        episode = parseInt(episodePart[0]);
-        if (episodePart.input.includes('-')) isBatch = true;
+        episode = episodePart;
+        if (episodePart.includes('-')) isBatch = true;
     }
     else isBatch = true;
 

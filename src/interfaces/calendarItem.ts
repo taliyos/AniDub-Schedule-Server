@@ -9,7 +9,7 @@ export interface CalendarItem {
     // Season #
     season: number | 0;
     // Episode #
-    episode: number | 0;
+    episode: string | "";
     // Episode Batch
     episodeBatch: boolean | false;
     // Release Time

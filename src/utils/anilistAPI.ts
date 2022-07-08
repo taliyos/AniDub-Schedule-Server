@@ -44,8 +44,9 @@ export async function getShow(calItem: CalendarItem) {
         }
     });
 
-    if (response.data.data.Page.media == null || response.data.data.Page.media.length == 0) {
-        console.warn(chalk.redBright("Couldn't find" + chalk.bold(calItem.show.name) + " on AniList, using defaults"));
+    if (response.data == null || response.data.data.Page.media == null || response.data.data.Page.media.length == 0) {
+        console.log(response);
+        console.warn(chalk.redBright("Couldn't find " + chalk.bold(calItem.show.name) + " on AniList, using defaults"));
         return {
             id: 0,
             coverImage: "static/img/nocover.png"
@@ -57,26 +58,29 @@ export async function getShow(calItem: CalendarItem) {
     // Find the correct season through episode counting
     let episodeCounter = calItem.episode;
     let index = 0;
-
+    /* Old method for looking for the correct season
     while (media[index] != undefined && media[index].episodes != null 
         && episodeCounter > media[index].episodes) {
         
         console.log("Looking for season...");
         episodeCounter -= media[index].episodes;
         index++;
-    }
+    }*/
 
-    if (index == 0 && calItem.season != 1) {
+    if (calItem.season != 1) {
         if (calItem.season - 1 < media.length) index = calItem.season - 1;
     }
-
-    // Check if the calculated season entry is available
-    else if (media[index] == null) index = 0;
 
     // Currently, nothing is done with the show's title
     // In the future, both the english and romaji names should be passed on
     // for customizability on the website
-
+    if (media[index] == null) {
+        console.log(chalk.redBright("Could not find " + calItem.show.name + " on AniList, using defaults"));
+        return {
+            id: 0,
+            coverImage: "static/img/nocover.png"
+        }
+    }
     console.log("Search for " + chalk.blueBright(calItem.show.name) + " complete!")
 
     return {
