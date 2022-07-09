@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import env from "dotenv";
+import https from "https";
 env.config();
 
 import { CalendarRetrieval } from "./calendar/calendarRetrieval";
@@ -20,7 +21,7 @@ const calendar = new CalendarRetrieval();
 const app = express();
 const port = process.env.PORT || 3001;
 
-const whitelist = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:80", "http://127.0.0.1:80"]
+const whitelist = ["http://localhost:3000", "https://talios.software", "http://talios.software"];
 const corsOptions = {
     origin: function(origin, callback) {
         if (!origin || whitelist.indexOf(origin) !== -1) {
