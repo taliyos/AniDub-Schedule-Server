@@ -20,7 +20,7 @@ const calendar = new CalendarRetrieval();
 const app = express();
 const port = process.env.PORT || 3001;
 
-const whitelist = ["http://localhost:3000", "http://127.0.0.1:3000"]
+const whitelist = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:80", "http://127.0.0.1:80"]
 const corsOptions = {
     origin: function(origin, callback) {
         if (!origin || whitelist.indexOf(origin) !== -1) {
