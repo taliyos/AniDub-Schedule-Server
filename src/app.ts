@@ -3,6 +3,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import env from "dotenv";
 import https from "https";
+import * as fs from "fs";
 env.config();
 
 import { CalendarRetrieval } from "./calendar/calendarRetrieval";
@@ -20,6 +21,11 @@ const calendar = new CalendarRetrieval();
 
 const app = express();
 const port = process.env.PORT || 3001;
+
+const httpsOptions = {
+    cert: fs.readFileSync("settings/server.crt"),
+    key: fs.readFileSync("settings/server.key")
+}
 
 const whitelist = ["http://localhost:3000", "https://talios.software", "http://talios.software"];
 const corsOptions = {
@@ -59,3 +65,5 @@ app.listen(port, async () => {
     await calendar.update();
     setInterval(async () => {await calendar.update(); }, 900000);
 });
+
+https.createServer(httpsOptions, app).listen(3002);
