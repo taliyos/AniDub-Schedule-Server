@@ -24,6 +24,14 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 const settings = loadSettings();
+let httpsOptions;
+if (settings.cert.length != 0 && settings.key.length != 0) {
+    httpsOptions ={
+        cert: readFileSync(settings.cert, "utf-8"),
+        key: readFileSync(settings.key, "utf-8")
+    };
+}
+
 console.log(settings.whitelist);
 const corsOptions = {
     origin: function(origin, callback) {
@@ -57,20 +65,16 @@ app.post("/calendar", (req, res) => {
     res.json(constructedCalendar);
 });
 
-if (process.env.USE_HTTPS) {
-    const httpsOptions = {
-        cert: readFileSync(settings.cert, "utf-8"),
-        key: readFileSync(settings.key, "utf-8")
-    }
-
-    https.createServer(httpsOptions, app).listen(3002);
-}
-
 app.listen(port, async () => {
     console.log(`Listening at http://localhost:${port}`);
     await calendar.update();
     setInterval(async () => {await calendar.update(); }, settings.updateRate);
 });
+
+if (process.env.USE_HTTPS) {
+    https.createServer(httpsOptions, app).listen(3002);
+}
+
 
 function loadSettings() : ServerSettings {
     return (JSON.parse(readFileSync("./src/settings/serverSettings.json", "utf-8")) as ServerSettings);
