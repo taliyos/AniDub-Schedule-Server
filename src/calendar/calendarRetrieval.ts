@@ -36,7 +36,7 @@ export class CalendarRetrieval {
         // Check if the new calendar has been updated since the last successful retrieval
         if (this.isOldCalendar(calendar)) return;
 
-        this.currentCalendar = (await processCalendar(calendar)).concat(this.archiveCalendar);
+        this.currentCalendar = this.archiveCalendar.concat(await processCalendar(calendar));
         this.lastRetrieved = retrievalTime;
     }
 

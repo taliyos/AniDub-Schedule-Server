@@ -65,16 +65,17 @@ app.post("/calendar", (req, res) => {
     res.json(constructedCalendar);
 });
 
-app.listen(port, async () => {
-    console.log(`Listening at http://localhost:${port}`);
-    await calendar.update();
-    setInterval(async () => {await calendar.update(); }, settings.updateRate);
-});
-
 if (process.env.USE_HTTPS) {
-    https.createServer(httpsOptions, app).listen(3002);
+    https.createServer(httpsOptions, app).listen(port, () => { serverUpdate(); });
+} else {
+    app.listen(port, () => { serverUpdate(); });
 }
 
+async function serverUpdate() {
+    console.log(`Listening at localhost:${port}`);
+    await calendar.update();
+    setInterval(async () => {await calendar.update(); }, settings.updateRate);
+}
 
 function loadSettings() : ServerSettings {
     return (JSON.parse(readFileSync("./src/settings/serverSettings.json", "utf-8")) as ServerSettings);
