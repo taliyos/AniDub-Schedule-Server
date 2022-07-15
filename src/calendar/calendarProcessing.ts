@@ -11,6 +11,9 @@ import { createShow, findShow } from "../services/showService";
 import { getShow } from "../utils/anilistAPI";
 
 import { AnilistShow, ExternalLink } from "../interfaces/anilist/anilistShow";
+import chalk from "chalk";
+
+let cache : Show[] = [];
 
 // Creates the calendar from the teamup information
 export async function processCalendar(calendar : TeamupCalendar) : Promise<CalendarItem[]> {
@@ -22,7 +25,12 @@ export async function processCalendar(calendar : TeamupCalendar) : Promise<Calen
         let calItem = getCalendarItem(calendar.events[i]);;
 
         // Database check
-        let show : Show = await findShow({ name: calItem.show.name });
+        let show : Show = findShowInCache(calItem.show.name);
+        if (show == undefined) {
+            show = await findShow({ name: calItem.show.name });
+            cache.push(show);
+        }
+
         if (show != null) {
             calItem.show = show;
             showCalendar.push(calItem);
@@ -32,7 +40,7 @@ export async function processCalendar(calendar : TeamupCalendar) : Promise<Calen
 
             calItem.show.anilistID = anilistShow.id;
             calItem.show.image = anilistShow.coverImage;
-            calItem.show.platforms = fillShowPlatforms(calItem.show.platforms, anilistShow.externalLinks)
+            calItem.show.platforms = fillShowPlatforms(calItem.show.platforms, anilistShow.externalLinks);
             
             // Add show to the database
             await createShow(calItem.show);
@@ -41,9 +49,26 @@ export async function processCalendar(calendar : TeamupCalendar) : Promise<Calen
         }
         
     }
+
+    clearCache();
     
 
     return showCalendar;
+}
+
+// Searches the cache for the show
+function findShowInCache(name: string) : Show {
+    for (let i = 0; i < cache.length; i++) {
+        if (cache[i] != null && cache[i].name === name) {
+            // console.log("Found " + chalk.rgb(255, 180, 0)(name) + " in the cache");
+            return cache[i];
+        }
+    }
+    return undefined;
+}
+
+function clearCache() {
+    cache.length = 0;
 }
 
 // Shortens the show's teamup title to it's CalendarItem equivalent

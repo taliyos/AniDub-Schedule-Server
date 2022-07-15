@@ -23,10 +23,11 @@ const calendar = new CalendarRetrieval();
 const app = express();
 const port = process.env.PORT || 3001;
 
-const whitelist = loadWhitelist();
+const settings = loadSettings();
+console.log(settings.whitelist);
 const corsOptions = {
     origin: function(origin, callback) {
-        if (!origin || whitelist.indexOf(origin) !== -1) {
+        if (!origin || settings.whitelist.indexOf(origin) !== -1) {
             callback(null, true);
         }
         else {
@@ -59,18 +60,18 @@ app.post("/calendar", (req, res) => {
 app.listen(port, async () => {
     console.log(`Listening at http://localhost:${port}`);
     await calendar.update();
-    setInterval(async () => {await calendar.update(); }, 900000);
+    setInterval(async () => {await calendar.update(); }, settings.updateRate);
 });
 
 let httpsOptions;
 if (process.env.USE_HTTPS) {
     httpsOptions = {
-        cert: readFileSync("settings/server.crt"),
-        key: readFileSync("settings/server.key")
+        cert: readFileSync(settings.cert, "utf-8"),
+        key: readFileSync(settings.key, "utf-8")
     }
     https.createServer(httpsOptions, app).listen(3002);
 }
 
-function loadWhitelist() : string[] {
-    return (JSON.parse(readFileSync("./src/settings/serverSettings.json", "utf-8")) as ServerSettings).whitelist;
+function loadSettings() : ServerSettings {
+    return (JSON.parse(readFileSync("./src/settings/serverSettings.json", "utf-8")) as ServerSettings);
 }

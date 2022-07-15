@@ -94,14 +94,13 @@ export async function getShow(calItem: CalendarItem) {
             externalLinks: null
         }
     }
-    console.log("Search for " + chalk.blueBright(calItem.show.name) + " complete!")
 
+    console.log("Search for " + chalk.blueBright(calItem.show.name) + " complete!")
     return {
         id: media[index].id,
         coverImage: media[index].coverImage.extraLarge,
         externalLinks: media[index].externalLinks
     };
-
 }
 
 function sleep(time: number) {

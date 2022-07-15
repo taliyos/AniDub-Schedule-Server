@@ -44,27 +44,6 @@ export class CalendarRetrieval {
     private async fetchCalendar() : Promise<TeamupCalendar> {
         // Set the start date
         let startDate = new Date();
-        startDate.setUTCFullYear(startDate.getUTCFullYear() + this.teamupConfig.startTime.year,
-                                startDate.getUTCMonth() + this.teamupConfig.startTime.month,
-                                startDate.getUTCDate() + this.teamupConfig.startTime.day);
-
-        // Set the end date
-        let endDate = new Date();
-        endDate.setUTCFullYear(endDate.getUTCFullYear() + this.teamupConfig.endTime.year,
-                                endDate.getUTCMonth() + this.teamupConfig.endTime.month,
-                                endDate.getUTCDate() + this.teamupConfig.endTime.day);
-
-        const response = await getCalendar(this.teamupConfig, startDate, endDate);
-
-        const calendar = (response as AxiosResponse).data as TeamupCalendar;
-        return calendar;
-    }
-
-    // Gets older dates in the calendar that are unlikely to be updated
-    // This is separated to make the update requests much smaller
-    private async fetchArchiveCalendar() : Promise<TeamupCalendar>{
-        // Set the start date
-        let startDate = new Date();
         startDate.setUTCFullYear(startDate.getUTCFullYear() + this.teamupConfig.updateStartTime.year,
                                 startDate.getUTCMonth() + this.teamupConfig.updateStartTime.month,
                                 startDate.getUTCDate() + this.teamupConfig.updateStartTime.day);
@@ -81,11 +60,36 @@ export class CalendarRetrieval {
         return calendar;
     }
 
+    // Gets older dates in the calendar that are unlikely to be updated
+    // This is separated to make the update requests much smaller
+    private async fetchArchiveCalendar() : Promise<TeamupCalendar>{
+        // Set the start date
+        let startDate = new Date();
+        startDate.setUTCFullYear(startDate.getUTCFullYear() + this.teamupConfig.startTime.year,
+                                startDate.getUTCMonth() + this.teamupConfig.startTime.month,
+                                startDate.getUTCDate() + this.teamupConfig.startTime.day);
+
+        // Set the end date
+        let endDate = new Date();
+        endDate.setUTCFullYear(endDate.getUTCFullYear() + this.teamupConfig.endTime.year,
+                                endDate.getUTCMonth() + this.teamupConfig.endTime.month,
+                                endDate.getUTCDate() + this.teamupConfig.endTime.day);
+
+        const response = await getCalendar(this.teamupConfig, startDate, endDate);
+
+        const calendar = (response as AxiosResponse).data as TeamupCalendar;
+        return calendar;
+    }
+
     // Checks if the calendar has been updated since the last retrieval
     private isOldCalendar(calendar : TeamupCalendar) : boolean {
         if (this.lastRetrieved == null || this.currentCalendar == null) return false;
+
+        if (this.lastRetrieved.getUTCDate() != new Date().getUTCDate()) return false;
+
         for (let i = 0; i < calendar.events.length; i++) {
-            if (new Date(calendar.events[i].update_dt) > this.lastRetrieved) return false;
+            if (new Date(calendar.events[i].update_dt).getTime() > this.lastRetrieved.getTime()
+            || new Date(calendar.events[i].creation_dt).getTime() > this.lastRetrieved.getTime()) return false;
         }
         console.log(chalk.yellowBright("Calendar is old, not updating..."));
         return true;
