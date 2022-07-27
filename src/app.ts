@@ -8,15 +8,7 @@ env.config();
 
 import { CalendarRetrieval } from "./calendar/calendarRetrieval";
 import ServerSettings from "./interfaces/serverSettings";
-
-// Connect to database
-mongoose.connect(process.env.DATABASE_URL);
-const db = mongoose.connection;
-
-
-
-db.on("erorr", (err) => console.log(err));
-db.once("open", () => console.log("Connected to database!"));
+import chalk from "chalk";
 
 const calendar = new CalendarRetrieval();
 
@@ -32,7 +24,6 @@ if (settings.cert.length != 0 && settings.key.length != 0) {
     };
 }
 
-console.log(settings.whitelist);
 const corsOptions = {
     origin: function(origin, callback) {
         if (!origin || settings.whitelist.indexOf(origin) !== -1) {
@@ -72,7 +63,19 @@ if (process.env.USE_HTTPS) {
 }
 
 async function serverUpdate() {
-    console.log(`Listening at localhost:${port}`);
+    console.log(`Listening on port ${port}`);
+    // Connect to database
+    await mongoose.connect(process.env.DATABASE_URL).catch(error => {
+        console.error(chalk.redBright("Unable to connect to MongoDB server at: " + process.env.DATABASE_URL));
+        console.error(chalk.bgRedBright(chalk.black(error)));
+        process.exit(1);
+    });
+
+    const db = mongoose.connection;
+
+    db.on("erorr", (err) => console.log(err));
+    db.once("open", () => console.log("Connected to database!"));
+
     await calendar.update();
     setInterval(async () => {await calendar.update(); }, settings.updateRate);
 }

@@ -1,6 +1,6 @@
 {
   "name": "anidub-server",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "The server for pulling and processing the anime dub calendar for AniDub Schedule!",
   "main": "dist/app.js",
   "scripts": {

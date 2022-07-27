@@ -6,8 +6,6 @@ import { Show } from "./show";
 
 export interface CalendarItem {
     show: Show;
-    // Season #
-    season: number | 0;
     // Episode #
     episode: string | "";
     // Episode Batch

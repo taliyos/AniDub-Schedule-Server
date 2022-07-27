@@ -68,8 +68,8 @@ export async function getShow(calItem: CalendarItem) {
         index++;
     }*/
 
-    if (calItem.season != 1) {
-        if (calItem.season - 1 < media.length) index = calItem.season - 1;
+    if (calItem.show.season != 1) {
+        if (calItem.show.season - 1 < media.length) index = calItem.show.season - 1;
     }
     else if (!media[0].title.romaji.toLowerCase().includes(calItem.show.name.toLowerCase()) && (media[0].title.english != null && !media[0].title.english.toLowerCase().includes(calItem.show.name.toLowerCase()))) {
         console.log(chalk.yellowBright("First entry doesn't use the same name, searching..."));

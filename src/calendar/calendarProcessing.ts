@@ -25,9 +25,9 @@ export async function processCalendar(calendar : TeamupCalendar) : Promise<Calen
         let calItem = getCalendarItem(calendar.events[i]);;
 
         // Database check
-        let show : Show = findShowInCache(calItem.show.name);
+        let show : Show = findShowInCache(calItem.show.name, calItem.show.season);
         if (show == undefined) {
-            show = await findShow({ name: calItem.show.name });
+            show = await findShow({ name: calItem.show.name, season: calItem.show.season });
             cache.push(show);
         }
 
@@ -57,9 +57,9 @@ export async function processCalendar(calendar : TeamupCalendar) : Promise<Calen
 }
 
 // Searches the cache for the show
-function findShowInCache(name: string) : Show {
+function findShowInCache(name: string, season: number) : Show {
     for (let i = 0; i < cache.length; i++) {
-        if (cache[i] != null && cache[i].name === name) {
+        if (cache[i] != null && cache[i].name === name && (cache[i].season == season || cache[i].season == -1)) {
             // console.log("Found " + chalk.rgb(255, 180, 0)(name) + " in the cache");
             return cache[i];
         }
@@ -83,9 +83,11 @@ function getCalendarItem(item: TeamupShow) : CalendarItem {
 
     let time = getShowReleaseTime(item.start_dt);
 
+    // The show's season is needed to differentiate between entries
+    show.season = episodeAndSeason.season;
+
     let calItem : CalendarItem = {
         show: show,
-        season: episodeAndSeason.season,
         episode: episodeAndSeason.episode,
         episodeBatch: episodeAndSeason.batch,
         time: time,
@@ -108,7 +110,7 @@ function getShowTitle(title: string) : Show {
         title = title.substring(title.indexOf("SUBJECT TO CHANGE") + 18);
     }
 
-    let match = /[A-Za-z]/.exec(title);
+    let match = /w*(?<![0-9])[A-Za-z]/.exec(title);
     let endOfTitle = title.indexOf('|');
     if (endOfTitle == -1) endOfTitle = title.length + 1;
     
@@ -132,10 +134,13 @@ function getShowTitle(title: string) : Show {
     } 
     else if (showName.includes("Finale")) {
         showName = showName.substring(0, showName.indexOf("Finale") - 1);
+    } else if (showName.includes("(Premiere)")) {
+        showName = showName.substring(0, showName.indexOf("(Premiere)"));
     }
 
     return {
         name: showName,
+        season: -1,
         image: null,
         anilistID: null,
         movie: isMovie,

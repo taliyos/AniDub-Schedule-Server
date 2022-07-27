@@ -14,6 +14,7 @@ const PlatformSchema = new Schema<Platform> ({
 
 const ShowSchema = new Schema<Show> ({
     name: { type: String, required: true },
+    season: { type: Number, required: false },
     image: { type: String, required: false },
     anilistID: { type: Number, required: false },
     movie: { type: Boolean, required: true },

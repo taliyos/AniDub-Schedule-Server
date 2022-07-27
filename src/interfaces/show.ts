@@ -6,6 +6,8 @@ import { ReleaseTime } from "./releaseTime";
 export interface Show {
     // Show Name
     name: string;
+    // Show Season
+    season: number;
     // Cover/key art
     image: string;
     // AniList ID
