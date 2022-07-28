@@ -51,6 +51,12 @@ export async function processCalendar(calendar : TeamupCalendar) : Promise<Calen
     }
 
     clearCache();
+
+    // Necessary to move "all-day" entries (those with unknown launch times)
+    // to the end of the day
+    showCalendar.sort((a, b) => {
+        return new Date(a.time.year, a.time.month, a.time.day, a.time.hour, a.time.minute).getTime() - new Date(b.time.year, b.time.month, b.time.day, b.time.hour, b.time.minute).getTime();
+    })
     
 
     return showCalendar;
@@ -218,6 +224,9 @@ function getShowEpisodeAndSeason(title: string) : EpisodeAndSeason {
 // Returns the day and time of release (in UTC)
 function getShowReleaseTime(time: string) : ReleaseTime {
     let releaseTime = new Date(time);
+
+    if (releaseTime.getUTCHours() === 4 && releaseTime.getUTCMinutes() === 0) releaseTime.setUTCHours(24);
+
     return {
         year: releaseTime.getUTCFullYear(),
         month: releaseTime.getUTCMonth(),
