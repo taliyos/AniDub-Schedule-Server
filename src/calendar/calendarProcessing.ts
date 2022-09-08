@@ -1,3 +1,16 @@
+/**
+ * calendarProcessing.ts is responsible for taking the calendar retrieved from TeamUp and parsing
+ * it into individual shows.
+ * 
+ * When a show is parsed, it checks to see if it already exists in the cache or the database.
+ * If it is, then it uses the pre-existing information. Otherwise, it creates a new show and
+ * adds it to the database.
+ * 
+ * Each unique show is added to a cache, which is used to prevent parsing the same information
+ * multiple times. 
+ * The cache is emptied after the calendar is processed.
+ */
+
 import { Crunchyroll, DefaultStreamingService, Funimation, HiDive, HomeVideo, Netflix } from "../constants/StreamingServices";
 import { CalendarItem } from "../interfaces/calendarItem";
 import { Platform } from "../interfaces/platform";
@@ -66,7 +79,6 @@ export async function processCalendar(calendar : TeamupCalendar) : Promise<Calen
 function findShowInCache(name: string, season: number) : Show {
     for (let i = 0; i < cache.length; i++) {
         if (cache[i] != null && cache[i].name === name && (cache[i].season == season || cache[i].season == -1)) {
-            // console.log("Found " + chalk.rgb(255, 180, 0)(name) + " in the cache");
             return cache[i];
         }
     }
@@ -154,6 +166,9 @@ function getShowTitle(title: string) : Show {
     };
 }
 
+// Takes each platform that should exist on the show and adds a placeholder
+// The link to the show is not known until information is pulled from AniList,
+// so a placeholder value is used.
 function getShowPlatforms(item: TeamupShow) : Platform[] {
     let streamingServices = getShowServices(item.subcalendar_ids);
     let platforms : Platform[] = [];
@@ -167,6 +182,8 @@ function getShowPlatforms(item: TeamupShow) : Platform[] {
     return platforms;
 }
 
+// Converts calendar ids to streaming services
+// These values are set by the TeamUp calendar and don't change
 function getShowServices(calendarIDs: number[]) : StreamingService[] {
     let services : StreamingService[] = [];
     for (let i = 0; i < calendarIDs.length; i++) {
@@ -187,6 +204,10 @@ interface EpisodeAndSeason {
     season: number,
     batch: boolean
 };
+
+// Takes the full title from the TeamUp calendar item and returns episode information.
+// The title from the TeamUp calendar includes the show's name, episode number,
+// (sometimes) the season and additional information that needs to be parsed.
 function getShowEpisodeAndSeason(title: string) : EpisodeAndSeason {
     let episode;
     let season = 1;
@@ -224,9 +245,7 @@ function getShowEpisodeAndSeason(title: string) : EpisodeAndSeason {
 // Returns the day and time of release (in UTC)
 function getShowReleaseTime(time: string) : ReleaseTime {
     let releaseTime = new Date(time);
-
     if (releaseTime.getUTCHours() === 4 && releaseTime.getUTCMinutes() === 0) releaseTime.setUTCHours(24);
-
     return {
         year: releaseTime.getUTCFullYear(),
         month: releaseTime.getUTCMonth(),

@@ -1,3 +1,7 @@
+/**
+ * aniListAPI.ts sends and processes requests made to AniList.
+ */
+
 import axios from "axios";
 import chalk from "chalk";
 

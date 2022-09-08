@@ -1,3 +1,8 @@
+/**
+ * showService.ts is responsible for providing the communication between the mongo database
+ * and the server.
+ */
+
 import chalk from "chalk";
 
 import { ShowModel } from "../models/showDB";

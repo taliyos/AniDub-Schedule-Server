@@ -1,3 +1,9 @@
+/**
+ * calendarRetrieval.ts is responsible for setting up and requesting the calendar
+ * from TeamUp. It contains the main update loop for a calendar, from retrieval to
+ * processing.
+ */
+
 import { promises } from "fs";
 import { AxiosResponse } from "axios";
 import chalk from "chalk";
@@ -95,6 +101,8 @@ export class CalendarRetrieval {
         return true;
     }
 
+    // Converts the json calendars into a single CalendarItem array 
+    // which can be used for processing
     getCalendar(startDate : Date, endDate: Date) : CalendarItem[] {
         if (this.currentCalendar == null) return null;
         if (startDate > endDate) return null;
